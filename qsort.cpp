@@ -9,8 +9,6 @@ void my_qsort(void *base, size_t nmemb, size_t size, int (*compare)(const void *
 void sort(int* data, int left, int right);
 int partition(int* data, int left, int right);
 void print_colourful_data(int* data, size_t size, size_t pivot_i, size_t left, size_t right);
-int compare(const void* first_str, const void* second_str);
-
 /*while( left != right ) {
       if( cmp( *left, *pivot ) ) {
          ++left;
@@ -42,37 +40,35 @@ int partition2(int* data, int first, int last)
     std::iter_swap( first, left );
 }*/
 
-void swap(char* first, char* second)
-{
-    
-}
-
-int partition(void* data, int (*compare)(const void *, const void *), int left, int right)
+int partition(int* data, int left, int right)
 {
     printf("\n\nNew part:\n");
-    char* pivot = (char*)data + (left + right) / 2;
+    size_t pivot_i = (left + right) / 2;
+    int pivot = data[pivot_i];
 
-    printf("%d pivot = %s\n", (left + right)/2, pivot);
-    //printf("left = %d pivot_i = %d right = %d\n", left, pivot_i, right);
+    printf("%d pivot = %d\n", (left + right)/2, pivot);
+    printf("left = %d pivot_i = %d right = %d\n", left, pivot_i, right);
+
 
 
     while(left < right)
     {
         //print_colourful_data(data, DATA_SIZE, pivot_i, left, right);
-        //printf("left = %d pivot_i = %d right = %d\n", left, pivot_i, right);
+        printf("left = %d pivot_i = %d right = %d\n", left, pivot_i, right);
 
-        while(compare((char*)data + left, pivot) < 0 && left < right)
+        while(data[left] < pivot && left < right)
         {
+            assert(left < right);
             ++left;
         }
 
-        while(compare((char*)data + right, pivot) > 0 && left < right)
+        while(data[right] > pivot && left < right)
         {
             assert(right >= 0);
             --right;
         }
 
-        //printf("left = %d pivot_i = %d right = %d\n", left, pivot_i, right);
+        printf("left = %d pivot_i = %d right = %d\n", left, pivot_i, right);
 
 
         if(left < right)
@@ -80,74 +76,61 @@ int partition(void* data, int (*compare)(const void *, const void *), int left, 
             printf("before swap:\n");
             print_colourful_data(data, DATA_SIZE, pivot_i, left, right);
             //printf("left = %d pivot_i = %d right = %d\n", left, pivot_i, right);
-            
-            std::swap(&((char*)data + right), &((char*)data + left));
+            std::swap(data[right], data[left]);
+            //printf("left = %d pivot_i = %d right = %d %d\n", left, pivot_i, right, right == pivot_i);
+            if(right == pivot_i)
+            {
+                pivot_i = left;
+                --left;
+            }
+            else if(left == pivot_i)
+            {
+                pivot_i = right;
+                ++right;
+            }
             //printf("left = %d pivot_i = %d right = %d\n", left, pivot_i, right);
-            
             ++left;
             --right;    
-            
             printf("after swap:\n");
             print_colourful_data(data, DATA_SIZE, pivot_i, left, right);
         }
+        
+
+        
 
     }
     printf("left = %d\n", left);
-    
-    return right;
+    return left;
 }
 
-int compare(const void* first_str, const void* second_str)
-{
-    char* str1 = (char*)first_str;
-    char* str2 = (char*)second_str;
-
-    size_t i = 0;
-
-    while(str1[i] != '\0' && str2[i] != '\0')
-    {
-        if(str1[i] > str2[i])
-            return 1;
-        else if(str1[i] < str2[i])
-            return -1;
-
-        ++i;
-    }
-
-    return 0;
-}
-
-void sort(void* data, size_t nmemb /*n_elements*/, int (*compare)(const void *, const void *), int left, int right)
+void sort(int* data, int left, int right)
 {
     if(left >= right)
         return;
 
     if(left == right - 1)
     {
-        if(compare((char*)data + left > (char*)data + right) > 0)
+        if(data[left] > data[right])
         {
-            std::swap((char*)data + right, (char*)data + left);
+            std::swap(data[right], data[left]);
         }
         return;
     }
 
-    if(left == right - 2)
-    {
-        ///TODO
-    }
+    int mid = partition(data, left, right);
 
-    int mid = partition(data, compare, left, right);
+    sort(data, left, mid - 1);
+    sort(data, mid, right);
 
-    sort(data, left, mid);
-    sort(data, mid + 1, right);
+
 }
 
 void my_qsort(void *base, size_t nmemb /*n_elements*/, size_t size /*sizeof element*/, int (*compare)(const void *, const void *))
 {
-    sort(data, compare, 0, nmemb - 1);
+    
 }
 
-void print_colourful_data(char* data, size_t size, size_t pivot_i, size_t left, size_t right)
+void print_colourful_data(int* data, size_t size, size_t pivot_i, size_t left, size_t right)
 {
     for(size_t i = 0; i < size; ++i)
         printf("%3ld ", i);
@@ -178,7 +161,7 @@ void print_colourful_data(char* data, size_t size, size_t pivot_i, size_t left, 
         if(i == pivot_i && (i == right || i == left))
             printf("\033[0;35m");
 
-        printf("%3s ", (char*)data + i);
+        printf("%3d ", data[i]);
     }
 
     printf("\x1b[0m");
